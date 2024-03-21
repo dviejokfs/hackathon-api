@@ -1,13 +1,13 @@
-import { GetMyProfileDto, RegisterUserDto } from '@gala-chain/api'
+import { FetchTokenClassesDto, GetMyProfileDto, RegisterUserDto } from '@gala-chain/api'
 import { ChainUser, gcclient, publicKeyContractAPI } from '@gala-chain/client'
 import { strings, type Strings } from '@helia/strings'
+import { FsBlockstore } from 'blockstore-fs'
 import cors from 'cors'
 import express from 'express'
 import fs from 'fs'
-import { type Helia, createHelia } from 'helia'
+import { createHelia, type Helia } from 'helia'
 import { CID } from 'multiformats/cid'
 import path from 'path'
-import { FsBlockstore } from 'blockstore-fs'
 
 import * as dto from './apples/dtos'
 
@@ -25,19 +25,19 @@ const params = {
 
 const appleContract = {
 	channelName: 'product-channel',
-	chaincodeName: 'basic-product',
+	chaincodeName: 'basic-product2',
 	contractName: 'AppleContract',
 }
 
 const pubKeyContract = {
 	channelName: 'product-channel',
-	chaincodeName: 'basic-product',
+	chaincodeName: 'basic-product2',
 	contractName: 'PublicKeyContract',
 }
 const tokenContract = {
 	channelName: 'product-channel',
-	chaincodeName: 'basic-product',
-	contractName: 'GalaChainTokenContract',
+	chaincodeName: 'basic-product2',
+	contractName: 'GalaChainToken',
 }
 
 let adminPrivateKeyString: string | undefined
@@ -121,6 +121,10 @@ const dtoMap = {
 	CreateChapterDto: dto.CreateChapterDto,
 	CreateLessonDto: dto.CreateLessonDto,
 	FetchLessonDto: dto.FetchLessonDto,
+	CreateNFTForLessonDto: dto.CreateNFTForLessonDto,
+	FetchTokenClassesDto: FetchTokenClassesDto,
+	CompleteLessonDto: dto.CompleteLessonDto,
+	GetStudentNFTsDto: dto.GetStudentNFTsDto,
 }
 const blockStore = new FsBlockstore('./ipfs-data')
 let helia: Helia
@@ -194,8 +198,9 @@ app.post('/submit', async (req, res) => {
 			sendValidationError(res, 'contract is required')
 			return
 		}
-		const client = contract === 'course' ? courseClient : pubKeyClient
+		const client = contract === 'course' ? courseClient : contract === 'token' ? tokenClient : pubKeyClient
 		const dto = dtoMap[`${fcn}Dto`] ?? dtoMap[req.body['class']]
+		console.log('class', req.body['class'])
 		if (!dto) {
 			sendValidationError(res, 'Invalid fcn')
 			return
@@ -211,7 +216,38 @@ app.post('/submit', async (req, res) => {
 		})
 	}
 })
+app.post('/credential-offer', async (req, res) => {
+	try {
+		const data = {
+			grants: {
+				'urn:ietf:params:oauth:grant-type:pre-authorized_code': {
+					'pre-authorized_code': '1234',
+					user_pin_required: true,
+				},
+			},
+			credentialsToIssue: [
+				{
+					type: 'CourseCompletion',
+					data: req.body,
+				},
+			],
+		}
+		const options = {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify(data),
+		}
 
+		const response = await fetch('http://localhost:3100/credential-offers', options)
+		const responseData = await response.json()
+		res.send(responseData)
+	} catch (e) {
+		console.error(e)
+		res.status(500).send({
+			message: 'Error occurred',
+		})
+	}
+})
 app.post('/evaluate', async (req, res) => {
 	try {
 		const { data, fcn, contract } = req.body
@@ -227,8 +263,9 @@ app.post('/evaluate', async (req, res) => {
 			sendValidationError(res, 'contract is required')
 			return
 		}
-		const client = contract === 'course' ? courseClient : pubKeyClient
-		const dto = dtoMap[`${fcn}Dto`]
+		const client = contract === 'course' ? courseClient : contract === 'token' ? tokenClient : pubKeyClient
+		const dto = dtoMap[`${fcn}Dto`] ?? dtoMap[req.body['class']]
+		console.log('class', req.body['class'])
 		if (!dto) {
 			sendValidationError(res, 'Invalid fcn')
 			return

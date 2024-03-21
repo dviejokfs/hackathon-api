@@ -12,19 +12,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { ChainCallDTO, StringEnumProperty } from "@gala-chain/api";
+import { ChainCallDTO, StringEnumProperty, TokenClass } from "@gala-chain/api";
 import { Type } from "class-transformer";
 import {
   ArrayNotEmpty,
   IsArray,
   IsIn,
+  IsNumber,
   IsOptional,
   IsString,
   ValidateIf,
   ValidateNested
 } from "class-validator";
 
-import { AppleTree, Chapter, Course, Lesson, StudentPurchase } from "./AppleTree";
+import { AppleTree, Chapter, Course, Lesson, StudentNFT, StudentPurchase } from "./AppleTree";
 import { CourseStatus, Variety } from "./types";
 
 export class AppleTreeDto extends ChainCallDTO {
@@ -203,6 +204,47 @@ export class PagedStudentPurchaseDto {
   }
 }
 
+export class GetStudentNFTsDto extends ChainCallDTO {
+  @IsString()
+  @IsOptional()
+  public readonly bookmark?: string;
+
+  @IsOptional()
+  public readonly limit?: number;
+
+  constructor(bookmark?: string, limit?: number) {
+    super();
+    this.bookmark = bookmark;
+    this.limit = limit;
+  }
+}
+
+export class StudentNFTWithTokenDto extends ChainCallDTO {
+  public readonly StudentNFT: StudentNFT;
+  public readonly Token: TokenClass;
+
+  constructor(StudentNFT: StudentNFT, Token: TokenClass) {
+    super();
+    this.StudentNFT = StudentNFT;
+    this.Token = Token;
+  }
+}
+
+export class PagedStudentNFTDto {
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => StudentNFTWithTokenDto)
+  public readonly nfts: StudentNFTWithTokenDto[];
+
+  @IsString()
+  public readonly bookmark: string;
+
+  constructor(nfts: StudentNFTWithTokenDto[], bookmark: string) {
+    this.nfts = nfts;
+    this.bookmark = bookmark;
+  }
+}
+
 export class StudentBalanceDto extends ChainCallDTO {
   public readonly balance: number;
 
@@ -298,6 +340,84 @@ export class ChapterDto extends ChainCallDTO {
     this.Lessons = Lessons;
   }
 }
+
+export class CompleteLessonDto extends ChainCallDTO {
+  @IsString()
+  public readonly courseId: string;
+
+  @IsString()
+  public readonly creator: string;
+
+  @IsString()
+  public readonly chapterId: string;
+
+  @IsString()
+  public readonly lessonId: string;
+
+  constructor(courseId: string, creator: string, chapterId: string, lessonId: string) {
+    super();
+    this.courseId = courseId;
+    this.creator = creator;
+    this.chapterId = chapterId;
+    this.lessonId = lessonId;
+  }
+}
+
+export class CreateNFTForLessonDto extends ChainCallDTO {
+  @IsString()
+  public readonly courseId: string;
+
+  @IsString()
+  public readonly chapterId: string;
+
+  @IsString()
+  public readonly lessonId: string;
+
+  @IsString()
+  public readonly NFTCollectionName: string;
+  @IsString()
+  public readonly NFTCategory: string;
+  @IsString()
+  public readonly NFTType: string;
+  @IsString()
+  public readonly NFTAdditionalKey: string;
+  @IsString()
+  public readonly NFTSymbol: string;
+  @IsString()
+  public readonly NFTDescription: string;
+  @IsString()
+  public readonly NFTImage: string;
+  @IsNumber()
+  public readonly NFTMaxSupply: number;
+
+  constructor(
+    courseId: string,
+    chapterId: string,
+    lessonId: string,
+    NFTCollectionName: string,
+    NFTCategory: string,
+    NFTType: string,
+    NFTAdditionalKey: string,
+    NFTSymbol: string,
+    NFTDescription: string,
+    NFTImage: string,
+    NFTMaxSupply: number
+  ) {
+    super();
+    this.courseId = courseId;
+    this.chapterId = chapterId;
+    this.lessonId = lessonId;
+    this.NFTCollectionName = NFTCollectionName;
+    this.NFTCategory = NFTCategory;
+    this.NFTType = NFTType;
+    this.NFTAdditionalKey = NFTAdditionalKey;
+    this.NFTSymbol = NFTSymbol;
+    this.NFTDescription = NFTDescription;
+    this.NFTImage = NFTImage;
+    this.NFTMaxSupply = NFTMaxSupply;
+  }
+}
+
 export class FetchLessonDto extends ChainCallDTO {
   @IsString()
   public readonly courseId: string;

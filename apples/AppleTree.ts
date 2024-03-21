@@ -22,7 +22,7 @@ import {
 } from "@gala-chain/api";
 import BigNumber from "bignumber.js";
 import { Exclude } from "class-transformer";
-import { IsArray, IsString } from "class-validator";
+import { IsArray, IsBoolean, IsOptional, IsString } from "class-validator";
 
 import { CourseStatus, Variety } from "./types";
 
@@ -251,13 +251,17 @@ export class Lesson extends ChainObject {
   @IsString()
   public IPFSCID: string;
 
+  @IsOptional()
+  public NFTClassKey: string;
+
   constructor(
     LessonID: string,
     ChapterID: string,
     CourseID: string,
     Title: string,
     Description: string,
-    IPFSCID: string
+    IPFSCID: string,
+    NFTClassKey?: string
   ) {
     super();
     this.LessonID = LessonID;
@@ -266,6 +270,46 @@ export class Lesson extends ChainObject {
     this.Title = Title;
     this.Description = Description;
     this.IPFSCID = IPFSCID;
+    if (NFTClassKey) {
+      this.NFTClassKey = NFTClassKey;
+    }
+  }
+}
+export class StudentNFT extends ChainObject {
+  @Exclude()
+  static INDEX_KEY = "STUNFT";
+
+  @ChainKey({ position: 0 })
+  @IsString()
+  public StudentID: string;
+
+  @ChainKey({ position: 1 })
+  @IsString()
+  public NFTClassKey: string;
+
+  @IsString()
+  public NFTInstanceID: string;
+  @IsString()
+  public CourseID: string;
+  @IsString()
+  public ChapterID: string;
+  @IsString()
+  public LessonID: string;
+  constructor(
+    StudentID: string,
+    NFTClassKey: string,
+    NFTInstanceID: string,
+    CourseID: string,
+    ChapterID: string,
+    LessonID: string
+  ) {
+    super();
+    this.StudentID = StudentID;
+    this.NFTClassKey = NFTClassKey;
+    this.NFTInstanceID = NFTInstanceID;
+    this.CourseID = CourseID;
+    this.ChapterID = ChapterID;
+    this.LessonID = LessonID;
   }
 }
 
