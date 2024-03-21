@@ -1,0 +1,30 @@
+{
+  "name": "decentralized-ed-api",
+  "module": "index.ts",
+  "type": "module",
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "@gala-chain/api": "1.1.8",
+    "@gala-chain/chaincode": "1.1.8",
+    "@gala-chain/cli": "1.1.8",
+    "@gala-chain/client": "1.1.8",
+    "@gala-chain/test": "1.1.8",
+    "@helia/json": "^3.0.2",
+    "@helia/strings": "^3.0.2",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "blockstore-fs": "^1.1.10",
+    "cors": "^2.8.5",
+    "express": "^4.19.0",
+    "fabric-ca-client": "^2.2.20",
+    "fabric-contract-api": "2.4.2",
+    "fabric-network": "^2.2.20",
+    "fabric-shim": "2.4.2",
+    "helia": "^4.1.0"
+  }
+}
